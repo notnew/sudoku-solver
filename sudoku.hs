@@ -3,7 +3,8 @@ module Sudoku ()
 
 import Data.Array (Array(..), (!), elems, indices, listArray)
 import Data.Ix (Ix(..))
-import Data.List(intersperse)
+import Data.List(intersperse, (\\))
+import Data.Maybe(catMaybes)
 
 data Game a = Game { size :: Int,
                      elements :: Array Position a}
@@ -44,6 +45,13 @@ getColumn col g = getElems g $ range ((0, col), ((size g)-1, col))
 
 getGroup :: Position -> Game a -> [a]
 getGroup (x, y) g = getElems g indices
-  where indices = range ((lowY, lowX), (lowY+2, lowX+2))
+  where -- switch order of x and y, to match ordering of Array
+        indices = range ((lowY, lowX), (lowY+2, lowX+2))
         lowX = x*3
         lowY = y*3
+
+getChoices :: Position -> Puzzle -> [Int]
+getChoices (col, row) p = (([1..9] \\ rowElems) \\ colElems) \\ groupElems
+  where rowElems = catMaybes $ getRow row p
+        colElems = catMaybes $ getColumn col p
+        groupElems = catMaybes $ getGroup (col `div` 3, row `div` 3) p
