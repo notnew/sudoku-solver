@@ -33,3 +33,17 @@ prettyPrint g  = show g ++ ":\n" ++ rowsString
 makeGame :: Int -> [a] -> Game a
 makeGame size elems = Game size $ listArray ((0,0), (size-1,size-1)) elems
 
+getElems :: Game a -> [Position] -> [a]
+getElems g ps = map (elements g !) ps
+
+getRow :: Int -> Game a -> [a]
+getRow row g = getElems g (range ((row,0), (row, (size g)-1)))
+
+getColumn :: Int -> Game a -> [a]
+getColumn col g = getElems g $ range ((0, col), ((size g)-1, col))
+
+getGroup :: Position -> Game a -> [a]
+getGroup (x, y) g = getElems g indices
+  where indices = range ((lowY, lowX), (lowY+2, lowX+2))
+        lowX = x*3
+        lowY = y*3
