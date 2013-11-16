@@ -24,14 +24,24 @@ printGame g = "<Game (" ++ s ++ "x" ++ s ++ ") " ++ contents  ++ ">"
   where s = show $ size g
         contents = show (elems $ elements g)
 
-prettyPrint :: (Show a) => Game a -> String
+prettyPrint :: Puzzle -> String
 prettyPrint g  = show g ++ ":\n" ++ rowsString
   where s = show $ size g
-        rowsString = concatMap showRow  $ rows (elems $ elements g)
-        showRow r = "   " ++ unwords (map show r) ++ "\n"
+        rowsString = interCat 3 "\n" . map showRow  $ rows (elems $ elements g)
+        showRow r = "   " ++ interCat 3 " " (map showElem r) ++ "\n"
+        showElem Nothing = "[ ]"
+        showElem x = show $ maybeToList x
         rows [] = []
         rows es = let (row, remaining) = splitAt (size g) es
                   in row : rows remaining
+        interCat :: Int -> [a] -> [[a]] -> [a]
+        -- periodically intersperse with separator, then concat results
+        interCat n sep = interCat' 0 [] []
+          where interCat' i acc result [] = result++sep++acc
+                interCat' i acc result (x:xs)
+                  | i < n     = interCat' (i+1) (acc++x) result xs
+                  | otherwise = interCat' 1 x (result++sep++acc) xs
+
 
 makeGame :: Int -> [a] -> Game a
 makeGame size elems = Game size $ listArray ((0,0), (size-1,size-1)) elems
