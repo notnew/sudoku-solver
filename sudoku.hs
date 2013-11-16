@@ -1,6 +1,3 @@
-module Sudoku ()
-       where
-
 import Data.Array ( Array(..), (!), elems, indices, listArray, array, assocs
                   , bounds)
 import Data.Function(on)
@@ -18,6 +15,16 @@ type Solution = Game Int
 instance Show a => Show (Game a) where
   show g = "<Game (" ++ s ++ "x" ++ s ++ ")>"
     where s = show $ size g
+
+main = do
+  puzzle <- readPuzzle
+  putStr "Solving the puzzle:\n"
+  putStr $ prettyPrint puzzle
+  putStr "...\n"
+  putStr . prettyPrint . head $ solve puzzle
+
+readPuzzle :: IO Puzzle
+readPuzzle = return puzzle
 
 printGame :: (Show a) => Game a -> String
 printGame g = "<Game (" ++ s ++ "x" ++ s ++ ") " ++ contents  ++ ">"
