@@ -1,3 +1,4 @@
+import Control.Monad (liftM)
 import Data.Array ( Array(..), (!), elems, indices, listArray, array, assocs
                   , bounds)
 import Data.Function(on)
@@ -24,7 +25,11 @@ main = do
   putStr . prettyPrint . head $ solve puzzle
 
 readPuzzle :: IO Puzzle
-readPuzzle = return puzzle
+readPuzzle = do
+  elems <- liftM words getContents
+  return . makeGame 9 $ map strToBox elems
+  where strToBox :: String -> Maybe Int
+        strToBox = listToMaybe . map fst . reads
 
 printGame :: (Show a) => Game a -> String
 printGame g = "<Game (" ++ s ++ "x" ++ s ++ ") " ++ contents  ++ ">"
