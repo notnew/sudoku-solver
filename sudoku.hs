@@ -27,21 +27,17 @@ printGame g = "<Game (" ++ s ++ "x" ++ s ++ ") " ++ contents  ++ ">"
 prettyPrint :: Puzzle -> String
 prettyPrint g  = show g ++ ":\n" ++ rowsString
   where s = show $ size g
-        rowsString = interCat 3 "\n" . map showRow  $ rows (elems $ elements g)
-        showRow r = "   " ++ interCat 3 " " (map showElem r) ++ "\n"
+        rowsString = groupByThree "\n" . map showRow  $ rows (elems $ elements g)
+        showRow r = "   " ++ groupByThree " " (map showElem r) ++ "\n"
         showElem Nothing = "[ ]"
         showElem x = show $ maybeToList x
         rows [] = []
-        rows es = let (row, remaining) = splitAt (size g) es
+        rows xs = let (row, remaining) = splitAt (size g) xs
                   in row : rows remaining
-        interCat :: Int -> [a] -> [[a]] -> [a]
-        -- periodically intersperse with separator, then concat results
-        interCat n sep = interCat' 0 [] []
-          where interCat' i acc result [] = result++sep++acc
-                interCat' i acc result (x:xs)
-                  | i < n     = interCat' (i+1) (acc++x) result xs
-                  | otherwise = interCat' 1 x (result++sep++acc) xs
-
+        -- groupByThree is like concat, but first adds a separator between
+        -- every 3 sublists
+        groupByThree :: [a] -> [[a]] -> [a]
+        groupByThree separator = concat . intersperseN 3 separator
 
 makeGame :: Int -> [a] -> Game a
 makeGame size elems = Game size $ listArray ((0,0), (size-1,size-1)) elems
@@ -109,6 +105,14 @@ arrayFindAll p a = foldl' step [] (indices a)
 
 arrayFind :: Ix i => (a -> Bool) -> Array i a -> Maybe i
 arrayFind p a = listToMaybe $ arrayFindAll p a
+
+-- like intersperse but only insert separator between every n elements
+intersperseN :: Int -> a -> [a] -> [a]
+intersperseN n sep = intersperse' 0
+  where intersperse' _ [] = []
+        intersperse' i (x:xs)
+          | i == n = sep : intersperse' 0 (x:xs)
+          | otherwise = x: intersperse' (i+1) xs
 
 puzzle :: Puzzle
 puzzle = makeGame 9 $ map listToMaybe [
